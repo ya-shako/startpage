@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  startpage:
+    build: .
+    container_name: startpage
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/app/data

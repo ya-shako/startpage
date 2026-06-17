@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startpage | Tridactyl</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            font-family: 'Segoe UI', 'JetBrains Mono', monospace;
+            min-height: 100vh;
+            color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(30, 30, 46, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 2rem;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .top-block {
+            margin-bottom: 2rem;
+        }
+
+        .clock {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem 0;
+        }
+        #time {
+            font-size: 5.5rem;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-shadow: 0 0 30px rgba(100, 150, 255, 0.4);
+            font-family: 'JetBrains Mono', 'Segoe UI', monospace;
+            line-height: 1.2;
+        }
+        #date {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            margin-top: 8px;
+            letter-spacing: 2px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-top: 10px;
+        }
+        .status-connected {
+            background: #51cf66;
+            color: #1e1e2e;
+        }
+        .status-disconnected {
+            background: #ff6b6b;
+            color: #1e1e2e;
+        }
+
+        .search-container {
+            margin-bottom: 1.5rem;
+        }
+        #searchInput {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-family: inherit;
+            color: white;
+            border-radius: 60px;
+            outline: none;
+            transition: 0.2s;
+        }
+        #searchInput:focus {
+            background: rgba(0,0,0,0.6);
+            border-color: #89b4fa;
+            transform: scale(1.01);
+        }
+        #searchInput::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            justify-content: center;
+        }
+        .quick-link {
+            background: rgba(20,20,35,0.8);
+            padding: 8px 20px;
+            border-radius: 60px;
+            text-decoration: none;
+            color: #cdd6f4;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .quick-link:hover {
+            background: #89b4fa;
+            color: #1e1e2e;
+            transform: translateY(-2px);
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .tab-btn.active {
+            background: #89b4fa;
+            color: #1e1e2e;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pomodoro-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: stretch;
+            width: 100%;
+        }
+        .timer-card {
+            flex: 1 1 0;
+            min-width: 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 32px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .timer-card.work { border-top: 4px solid #ff6b6b; }
+        .timer-card.break { border-top: 4px solid #51cf66; }
+        .timer-label {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            white-space: nowrap;
+        }
+        .time-input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 1.6rem;
+            font-family: monospace;
+            width: 100px;
+            text-align: center;
+            border-radius: 40px;
+            padding: 0.4rem;
+            margin-bottom: 0.8rem;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        .time-input::-webkit-outer-spin-button,
+        .time-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .time-input:focus {
+            outline: none;
+            border-color: #89b4fa;
+            background: rgba(0,0,0,0.7);
+        }
+        .current-time {
+            font-size: 2.8rem;
+            font-family: monospace;
+            font-weight: bold;
+            margin: 0.8rem 0;
+            letter-spacing: 4px;
+            cursor: pointer;
+            background: rgba(0,0,0,0.3);
+            padding: 0.2rem 0.8rem;
+            border-radius: 28px;
+            transition: 0.1s;
+            white-space: nowrap;
+        }
+        .current-time:active {
+            transform: scale(0.98);
+        }
+        .main-control-btn {
+            background: #89b4fa;
+            border: none;
+            color: #1e1e2e;
+            font-size: 1rem;
+            padding: 8px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0.3rem 0.2rem;
+            transition: 0.2s;
+        }
+        .main-control-btn:hover {
+            transform: scale(1.02);
+            background: #a5c8ff;
+        }
+        .reset-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .reset-btn:hover {
+            background: rgba(255,80,80,0.5);
+            color: white;
+        }
+        .timer-status {
+            font-size: 0.75rem;
+            margin-top: 0.6rem;
+            background: rgba(0,0,0,0.4);
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 30px;
+        }
+
+        .add-task-area {
+            margin-bottom: 1.5rem;
+        }
+        .add-task-form {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .add-task-form input {
+            flex: 2;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.7rem 1rem;
+            border-radius: 40px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .add-task-form input:focus {
+            outline: none;
+            border-color: #89b4fa;
+        }
+        .add-task-form select {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .add-task-form button {
+            background: #89b4fa;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            color: #1e1e2e;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+        }
+        .add-task-form button:hover {
+            background: #a5c8ff;
+        }
+
+        .kanban-board {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        
+        .column {
+            flex: 1;
+            min-width: 240px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 20px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            height: 420px;
+            max-height: 420px;
+            overflow: hidden;
+        }
+        
+        .column-header {
+            font-size: 1rem;
+            font-weight: bold;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+            border-bottom: 2px solid;
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .todo-header { border-bottom-color: #89b4fa; }
+        .doing-header { border-bottom-color: #ffb86b; }
+        .done-header { border-bottom-color: #51cf66; }
+        
+        .task-list {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+            padding-right: 4px;
+        }
+        
+        .task-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .task-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .task-list::-webkit-scrollbar-thumb {
+            background: #89b4fa;
+            border-radius: 10px;
+        }
+        
+        .task-item {
+            background: rgba(30,30,46,0.8);
+            margin: 0.5rem 0;
+            padding: 0.6rem 0.8rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            transition: 0.1s;
+        }
+        .task-item:hover {
+            background: rgba(137,180,250,0.2);
+        }
+        .task-item.kanban-focused {
+            border: 2px solid #89b4fa;
+            background: rgba(137,180,250,0.3);
+        }
+        .task-text {
+            flex: 1;
+            word-break: break-word;
+        }
+        .task-actions {
+            display: flex;
+            gap: 4px;
+        }
+        .task-actions button {
+            background: none;
+            border: none;
+            color: #cdd6f4;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0 4px;
+            opacity: 0.6;
+            transition: 0.1s;
+        }
+        .task-actions button:hover {
+            opacity: 1;
+            color: #ffb86b;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 2rem;
+            opacity: 0.5;
+        }
+        kbd {
+            background: rgba(0,0,0,0.5);
+            border-radius: 6px;
+            padding: 2px 8px;
+        }
+        .shortcut-hint {
+            font-size: 0.7rem;
+            color: #89b4fa;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 700px) {
+            .dashboard { padding: 1rem; }
+            #time { font-size: 3.5rem; }
+            .timer-label { font-size: 1rem; white-space: normal; }
+            .current-time { font-size: 2rem; }
+            .time-input { width: 80px; font-size: 1.3rem; }
+            .column { min-width: 200px; height: 360px; max-height: 360px; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="top-block">
+        <div class="clock">
+            <div id="time">--:--:--</div>
+            <div id="date"></div>
+            <div>
+                <span id="connectionStatus" class="status-indicator status-disconnected">⛔ Офлайн</span>
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Поиск или URL | Enter для перехода">
+        </div>
+        
+        <div class="quick-links">
+            <a href="https://chat.deepseek.com" class="quick-link">🤖 DeepSeek</a>
+            <a href="https://zvuk.com" class="quick-link">🎵 Сбер Звук</a>
+            <a href="https://github.com/ya-shako" class="quick-link">📂 GitHub</a>
+            <a href="https://google.com" class="quick-link">Goonle</a>
+            <a href="https://mail.google.com" class="quick-link">📧 Gmail</a>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="pomodoro">🍅 ПОМОДОРО</button>
+        <button class="tab-btn" data-tab="kanban">📋 КАНБАН</button>
+    </div>
+
+    <div id="pomodoroTab" class="tab-content active">
+        <div class="pomodoro-container">
+            <div class="timer-card work">
+                <div class="timer-label">💪 РАБОТА</div>
+                <input type="number" id="workMinutesInput" class="time-input" value="25" min="1" max="180" step="1">
+                <div class="current-time" id="workCurrent">25:00</div>
+                <div>
+                    <button class="main-control-btn" id="workMainBtn">▶ СТАРТ</button>
+                    <button class="main-control-btn reset-btn" id="workResetBtn">⟳ СБРОС</button>
+                </div>
+                <div class="timer-status" id="workStatus">⏸ Остановлен</div>
+            </div>
+
+            <div class="timer-card break">
+                <div class="timer-label">🌿 ОТДЫХ</div>
+                <input type="number" id="breakMinutesInput" class="time-input" value="5" min="1" max="180" step="1">
+                <div class="current-time" id="breakCurrent">05:00</div>
+                <div>
+                    <button class="main-control-btn" id="breakMainBtn">▶ СТАРТ</button>
+                    <button class="main-control-btn reset-btn" id="breakResetBtn">⟳ СБРОС</button>
+                </div>
+                <div class="timer-status" id="breakStatus">⏸ Остановлен</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="kanbanTab" class="tab-content">
+        <div class="add-task-area">
+            <div class="add-task-form">
+                <input type="text" id="newTaskInput" placeholder="Новая задача...">
+                <select id="taskColumnSelect">
+                    <option value="todo">📌 TO DO</option>
+                    <option value="doing">⚙️ DOING</option>
+                    <option value="done">✅ DONE</option>
+                </select>
+                <button id="addTaskBtn">➕ Добавить</button>
+            </div>
+        </div>
+
+        <div class="kanban-board">
+            <div class="column" data-col="todo">
+                <div class="column-header todo-header">📌 TO DO</div>
+                <div class="task-list" id="todoList"></div>
+            </div>
+            <div class="column" data-col="doing">
+                <div class="column-header doing-header">⚙️ DOING</div>
+                <div class="task-list" id="doingList"></div>
+            </div>
+            <div class="column" data-col="done">
+                <div class="column-header done-header">✅ DONE</div>
+                <div class="task-list" id="doneList"></div>
+            </div>
+        </div>
+        <div class="shortcut-hint">
+            🎮 ← → ↑ ↓ — навигация | Enter — переместить вправо | Delete — удалить
+        </div>
+    </div>
+
+    <footer>
+        ⏲ <kbd>Tab</kbd> — переключение | <kbd>f</kbd> — хинты Tridactyl
+    </footer>
+</div>
+
+<script>
+// ===== WEBSOCKET CLIENT =====
+let ws = null;
+let isConnected = false;
+let serverState = null;
+
+function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}`;
+    
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        console.log('Подключено к серверу');
+        isConnected = true;
+        updateConnectionStatus(true);
+    };
+    
+    ws.onmessage = (event) => {
+        try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'state') {
+                serverState = message.data;
+                applyState(message.data);
+            }
+        } catch (e) {
+            console.error('Ошибка обработки сообщения:', e);
+        }
+    };
+    
+    ws.onclose = () => {
+        console.log('Отключено от сервера');
+        isConnected = false;
+        updateConnectionStatus(false);
+        setTimeout(connectWebSocket, 3000);
+    };
+    
+    ws.onerror = (error) => {
+        console.error('Ошибка WebSocket:', error);
+    };
+}
+
+function updateConnectionStatus(connected) {
+    const el = document.getElementById('connectionStatus');
+    if (connected) {
+        el.className = 'status-indicator status-connected';
+        el.textContent = '🟢 Онлайн';
+    } else {
+        el.className = 'status-indicator status-disconnected';
+        el.textContent = '⛔ Офлайн';
+    }
+}
+
+function sendToServer(type, data) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type, data }));
+    } else {
+        console.warn('Нет соединения с сервером');
+    }
+}
+
+// ===== ПРИМЕНЕНИЕ СОСТОЯНИЯ =====
+function applyState(state) {
+    if (!state) return;
+    
+    for (const [type, timer] of Object.entries(state.timers)) {
+        const currentEl = document.getElementById(`${type}Current`);
+        const statusEl = document.getElementById(`${type}Status`);
+        const mainBtn = document.getElementById(`${type}MainBtn`);
+        const minutesInput = document.getElementById(`${type}MinutesInput`);
+        
+        if (currentEl) {
+            const mins = Math.floor(timer.currentSec / 60);
+            const secs = timer.currentSec % 60;
+            currentEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        if (statusEl) {
+            const statusText = timer.isFinished ? '✅ Завершён' : 
+                              (timer.isRunning ? '▶ В работе' : '⏸ Остановлен');
+            statusEl.innerHTML = statusText;
+        }
+        
+        if (mainBtn) {
+            mainBtn.innerHTML = timer.isRunning ? '⏸ ПАУЗА' : '▶ СТАРТ';
+        }
+        
+        if (minutesInput) {
+            minutesInput.value = timer.settingMin;
+        }
+    }
+    
+    if (state.kanban) {
+        kanbanTasks = state.kanban;
+        renderKanban();
+    }
+}
+
+// ===== УБИРАЕМ ФОКУС =====
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+});
+
+// ===== ВКЛАДКИ =====
+let currentTab = 'pomodoro';
+    
+function switchTab(tabId) {
+    currentTab = tabId;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === `${tabId}Tab`);
+    });
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault();
+        const newTab = currentTab === 'pomodoro' ? 'kanban' : 'pomodoro';
+        switchTab(newTab);
+    }
+});
+
+// ===== ПОИСК =====
+const searchInput = document.getElementById('searchInput');
+function handleSearch() {
+    let query = searchInput.value.trim();
+    if (!query) return;
+    if (query.includes('.') && !query.includes(' ') && (query.includes('http') || query.match(/^[a-z0-9-]+\.[a-z]{2,}/))) {
+        let url = query.startsWith('http') ? query : 'https://' + query;
+        window.location.href = url;
+    } else {
+        window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    }
+}
+searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(); });
+
+// ===== ПОМОДОРО =====
+document.getElementById('workMainBtn').onclick = function() {
+    if (!isConnected) {
+        alert('Нет подключения к серверу!');
+        return;
+    }
+    sendToServer('toggle-timer', { timerType: 'work' });
+};
+
+document.getElementById('breakMainBtn').onclick = function() {
+    if (!isConnected) {
+        alert('Нет подключения к серверу!');
+        return;
+    }
+    sendToServer('toggle-timer', { timerType: 'break' });
+};
+
+document.getElementById('workResetBtn').onclick = function() {
+    if (!isConnected) {
+        alert('Нет подключения к серверу!');
+        return;
+    }
+    sendToServer('reset-timer', { timerType: 'work' });
+};
+
+document.getElementById('breakResetBtn').onclick = function() {
+    if (!isConnected) {
+        alert('Нет подключения к серверу!');
+        return;
+    }
+    sendToServer('reset-timer', { timerType: 'break' });
+};
+
+document.getElementById('workMinutesInput').addEventListener('change', function() {
+    if (!isConnected || !serverState) return;
+    const val = parseInt(this.value) || 25;
+    const timer = serverState.timers.work;
+    timer.settingMin = val;
+    timer.currentSec = val * 60;
+    timer.isRunning = false;
+    timer.isFinished = false;
+    sendToServer('update-timer', {
+        timerType: 'work',
+        settingMin: val,
+        currentSec: val * 60,
+        isRunning: false,
+        isFinished: false
+    });
+});
+
+document.getElementById('breakMinutesInput').addEventListener('change', function() {
+    if (!isConnected || !serverState) return;
+    const val = parseInt(this.value) || 5;
+    const timer = serverState.timers.break;
+    timer.settingMin = val;
+    timer.currentSec = val * 60;
+    timer.isRunning = false;
+    timer.isFinished = false;
+    sendToServer('update-timer', {
+        timerType: 'break',
+        settingMin: val,
+        currentSec: val * 60,
+        isRunning: false,
+        isFinished: false
+    });
+});
+
+// ===== КАНБАН =====
+let kanbanTasks = { todo: [], doing: [], done: [] };
+let kbCurrentCol = 'todo';
+let kbCurrentIdx = -1;
+
+function sendKanbanUpdate() {
+    sendToServer('update-kanban', kanbanTasks);
+}
+
+function renderKanban() {
+    renderColumn('todo');
+    renderColumn('doing');
+    renderColumn('done');
+    updateKanbanFocus();
+}
+
+function renderColumn(col) {
+    const container = document.getElementById(`${col}List`);
+    if (!container) return;
+    container.innerHTML = '';
+    (kanbanTasks[col] || []).forEach((task, idx) => {
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        if (kbCurrentCol === col && kbCurrentIdx === idx) div.classList.add('kanban-focused');
+        div.innerHTML = `
+            <span class="task-text">${escapeHtml(task)}</span>
+            <div class="task-actions">
+                <button class="move-left" data-col="${col}" data-idx="${idx}" title="←">←</button>
+                <button class="move-right" data-col="${col}" data-idx="${idx}" title="→">→</button>
+                <button class="delete-task" data-col="${col}" data-idx="${idx}" title="🗑">🗑</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+    
+    document.querySelectorAll(`#${col}List .move-left`).forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            moveTask(btn.dataset.col, parseInt(btn.dataset.idx), 'left');
+        };
+    });
+    document.querySelectorAll(`#${col}List .move-right`).forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            moveTask(btn.dataset.col, parseInt(btn.dataset.idx), 'right');
+        };
+    });
+    document.querySelectorAll(`#${col}List .delete-task`).forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            deleteTask(btn.dataset.col, parseInt(btn.dataset.idx));
+        };
+    });
+}
+
+function moveTask(fromCol, idx, dir) {
+    const order = ['todo', 'doing', 'done'];
+    const fromIdx = order.indexOf(fromCol);
+    if (dir === 'left' && fromIdx > 0) {
+        const task = kanbanTasks[fromCol][idx];
+        kanbanTasks[fromCol].splice(idx, 1);
+        kanbanTasks[order[fromIdx - 1]].push(task);
+    } else if (dir === 'right' && fromIdx < order.length - 1) {
+        const task = kanbanTasks[fromCol][idx];
+        kanbanTasks[fromCol].splice(idx, 1);
+        kanbanTasks[order[fromIdx + 1]].push(task);
+    }
+    sendKanbanUpdate();
+    renderKanban();
+    if (kanbanTasks[fromCol].length > 0 && kbCurrentIdx >= kanbanTasks[fromCol].length) {
+        kbCurrentIdx = kanbanTasks[fromCol].length - 1;
+    }
+    if (kanbanTasks[fromCol].length === 0 && kbCurrentCol === fromCol) {
+        const order2 = ['todo', 'doing', 'done'];
+        let newCol = null;
+        for (let c of order2) {
+            if (kanbanTasks[c].length > 0) { newCol = c; break; }
+        }
+        if (newCol) { kbCurrentCol = newCol; kbCurrentIdx = 0; }
+        else { kbCurrentIdx = -1; }
+    }
+    renderKanban();
+}
+
+function deleteTask(col, idx) {
+    kanbanTasks[col].splice(idx, 1);
+    sendKanbanUpdate();
+    if (kbCurrentCol === col && kbCurrentIdx === idx) {
+        if (kanbanTasks[col].length > 0) {
+            kbCurrentIdx = Math.min(idx, kanbanTasks[col].length - 1);
+        } else {
+            const order = ['todo', 'doing', 'done'];
+            let found = false;
+            for (let c of order) {
+                if (kanbanTasks[c].length > 0) {
+                    kbCurrentCol = c;
+                    kbCurrentIdx = 0;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) { kbCurrentCol = 'todo'; kbCurrentIdx = -1; }
+        }
+    }
+    renderKanban();
+}
+
+function addKanbanTask() {
+    const input = document.getElementById('newTaskInput');
+    const text = input.value.trim();
+    const target = document.getElementById('taskColumnSelect').value;
+    if (!text) return;
+    kanbanTasks[target].push(text);
+    input.value = '';
+    sendKanbanUpdate();
+    renderKanban();
+    kbCurrentCol = target;
+    kbCurrentIdx = kanbanTasks[target].length - 1;
+    renderKanban();
+}
+
+function updateKanbanFocus() {
+    const container = document.getElementById(`${kbCurrentCol}List`);
+    if (container && container.children[kbCurrentIdx] && kbCurrentIdx >= 0) {
+        const focusedEl = container.children[kbCurrentIdx];
+        focusedEl.classList.add('kanban-focused');
+        focusedEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function navigateKanban(dir) {
+    const cols = ['todo', 'doing', 'done'];
+    let colIdx = cols.indexOf(kbCurrentCol);
+    if (colIdx === -1) colIdx = 0;
+    if (dir === 'left' && colIdx > 0) {
+        kbCurrentCol = cols[colIdx - 1];
+        if (kanbanTasks[kbCurrentCol].length === 0) kbCurrentIdx = -1;
+        else kbCurrentIdx = Math.min(kbCurrentIdx, kanbanTasks[kbCurrentCol].length - 1);
+        if (kbCurrentIdx < 0 && kanbanTasks[kbCurrentCol].length > 0) kbCurrentIdx = 0;
+    } else if (dir === 'right' && colIdx < cols.length - 1) {
+        kbCurrentCol = cols[colIdx + 1];
+        if (kanbanTasks[kbCurrentCol].length === 0) kbCurrentIdx = -1;
+        else kbCurrentIdx = Math.min(kbCurrentIdx, kanbanTasks[kbCurrentCol].length - 1);
+        if (kbCurrentIdx < 0 && kanbanTasks[kbCurrentCol].length > 0) kbCurrentIdx = 0;
+    } else if (dir === 'up') {
+        if (kbCurrentIdx > 0) kbCurrentIdx--;
+    } else if (dir === 'down') {
+        if (kbCurrentIdx < kanbanTasks[kbCurrentCol].length - 1) kbCurrentIdx++;
+    }
+    if (kbCurrentIdx === -1 && kanbanTasks[kbCurrentCol].length > 0) kbCurrentIdx = 0;
+    renderKanban();
+}
+
+function activateKanban() {
+    if (kbCurrentIdx >= 0 && kanbanTasks[kbCurrentCol][kbCurrentIdx]) {
+        const cols = ['todo', 'doing', 'done'];
+        const curIdx = cols.indexOf(kbCurrentCol);
+        if (curIdx < cols.length - 1) {
+            const task = kanbanTasks[kbCurrentCol][kbCurrentIdx];
+            kanbanTasks[kbCurrentCol].splice(kbCurrentIdx, 1);
+            kanbanTasks[cols[curIdx + 1]].push(task);
+            sendKanbanUpdate();
+            renderKanban();
+            kbCurrentCol = cols[curIdx + 1];
+            kbCurrentIdx = kanbanTasks[kbCurrentCol].length - 1;
+            renderKanban();
+        }
+    }
+}
+
+function deleteKanban() {
+    if (kbCurrentIdx >= 0 && kanbanTasks[kbCurrentCol][kbCurrentIdx]) {
+        deleteTask(kbCurrentCol, kbCurrentIdx);
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if (currentTab !== 'kanban') return;
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA')) return;
+    switch(e.key) {
+        case 'ArrowLeft': e.preventDefault(); navigateKanban('left'); break;
+        case 'ArrowRight': e.preventDefault(); navigateKanban('right'); break;
+        case 'ArrowUp': e.preventDefault(); navigateKanban('up'); break;
+        case 'ArrowDown': e.preventDefault(); navigateKanban('down'); break;
+        case 'Enter': e.preventDefault(); activateKanban(); break;
+        case 'Backspace': e.preventDefault(); deleteKanban(); break;
+    }
+});
+
+function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+document.getElementById('addTaskBtn').onclick = addKanbanTask;
+document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addKanbanTask();
+});
+
+// ===== ЧАСЫ =====
+function updateClock() {
+    const now = new Date();
+    document.getElementById('time').innerText = now.toLocaleTimeString('ru-RU', { hour12: false });
+    document.getElementById('date').innerText = now.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ===== ЗАПУСК =====
+connectWebSocket();
+kanbanTasks = { todo: [], doing: [], done: [] };
+renderKanban();
+</script>
+</body>
+</html>
